@@ -30,6 +30,25 @@ export default function Registro(){
      const onSubmit =  async (data) =>{
         console.log("datos recibidos", data);
         try {
+            if (foto) {
+        const formData = new FormData();
+        formData.append("file", foto);
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const uploadData = await uploadRes.json();
+        if (uploadRes.ok) {
+          data.foto = uploadData.url;
+          setFotoUrl(uploadData.url);
+        } else {
+          alert("Error al subir imagen");
+          return;
+        }
+      }
+
            const response = await fetch("/api/usuarios",{
             method: "POST",
             headers: {"Content-Type" : "application/json"},
@@ -50,6 +69,8 @@ export default function Registro(){
      };
      const [buscarCurp, setBuscarCurp] = useState("");
   const [usuarioEncontrado, setUsuarioEncontrado] = useState(null);
+     const [foto, setFoto] = useState(null);
+    const [fotoUrl, setFotoUrl] = useState("");
 
   const buscarUsuario = async () => {
     if (!buscarCurp || buscarCurp.length !== 18) {
@@ -70,6 +91,14 @@ export default function Registro(){
     } catch (error) {
       alert("Error al buscar usuario");
       console.error(error);
+    }
+  };
+    const handleFoto = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === "image/png" || file.type === "image/jpeg")) {
+      setFoto(file);
+    } else {
+      alert("Solo se permiten imágenes PNG o JPEG");
     }
   };
      return (
@@ -104,6 +133,11 @@ export default function Registro(){
                 <input type="password" placeholder="Contraseña" {...register("password")}/>
                 <p>{errors.password?.message}</p>
 
+                 <label>Foto de perfil (PNG o JPEG)</label>
+                 <input type="file" accept="image/png, image/jpeg" onChange={handleFoto} />
+                {fotoUrl && <img src={fotoUrl} alt="Vista previa" width={120} />}
+
+
                 <button type="submit">Guardar Datos</button>
             </form>
             <hr style={{ margin: "30px 0" }} />
@@ -126,6 +160,12 @@ export default function Registro(){
           <p><strong>Fecha Nacimiento:</strong> {new Date(usuarioEncontrado.fechaNacimiento).toLocaleDateString()}</p>
           <p><strong>Escolaridad:</strong> {usuarioEncontrado.escolaridad}</p>
           <p><strong>Dirección:</strong> {usuarioEncontrado.direccion}</p>
+           {usuarioEncontrado.foto && (
+            <div>
+              <strong>Foto:</strong><br />
+              <img src={usuarioEncontrado.foto} alt="Usuario" width={120} />
+            </div>
+          )}
         </div>
       )}
         </div>

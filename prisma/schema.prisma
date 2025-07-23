@@ -23,4 +23,5 @@ fechaNacimiento DateTime
 escolaridad  String
 direccion       String?
 password    String
+foto        String?
 }
