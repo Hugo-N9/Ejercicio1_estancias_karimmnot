@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { useState } from "react";
 const schema = z.object({
     curp : z.string().length(18, "La CURP debe tener 18 Caracteres"),
     nombre: z.string().min(3,"El nombre no es valido"),
@@ -48,6 +48,30 @@ export default function Registro(){
             alert("ocurrio un error al enviar los datos");
         }
      };
+     const [buscarCurp, setBuscarCurp] = useState("");
+  const [usuarioEncontrado, setUsuarioEncontrado] = useState(null);
+
+  const buscarUsuario = async () => {
+    if (!buscarCurp || buscarCurp.length !== 18) {
+      alert("CURP inválido");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/usuarios/${buscarCurp}`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setUsuarioEncontrado(data);
+      } else {
+        alert(data.error);
+        setUsuarioEncontrado(null);
+      }
+    } catch (error) {
+      alert("Error al buscar usuario");
+      console.error(error);
+    }
+  };
      return (
         <div style={{maxWidth: 500,margin: "auto", padding: 20}}>
             <h1>Registro de usuarios</h1>
@@ -82,6 +106,28 @@ export default function Registro(){
 
                 <button type="submit">Guardar Datos</button>
             </form>
+            <hr style={{ margin: "30px 0" }} />
+
+      <h2>Buscar usuario por CURP</h2>
+      <input
+        placeholder="Escribe CURP"
+        value={buscarCurp}
+        onChange={(e) => setBuscarCurp(e.target.value)}
+        maxLength={18}
+      />
+      <button type="button" onClick={buscarUsuario}>Buscar</button>
+
+      {usuarioEncontrado && (
+        <div style={{ marginTop: 20, border: "1px solid #ccc", padding: 15 }}>
+          <h3>Datos del Usuario</h3>
+          <p><strong>Nombre:</strong> {usuarioEncontrado.nombre}</p>
+          <p><strong>Apellidos:</strong> {usuarioEncontrado.apellidos}</p>
+          <p><strong>Email:</strong> {usuarioEncontrado.email}</p>
+          <p><strong>Fecha Nacimiento:</strong> {new Date(usuarioEncontrado.fechaNacimiento).toLocaleDateString()}</p>
+          <p><strong>Escolaridad:</strong> {usuarioEncontrado.escolaridad}</p>
+          <p><strong>Dirección:</strong> {usuarioEncontrado.direccion}</p>
+        </div>
+      )}
         </div>
      );
 }
