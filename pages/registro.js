@@ -16,6 +16,7 @@ const schema = z.object({
     }),
     direccion: z.string().min(5, "La direccion es invalida"),
     escolaridad: z.string().min(1,"Seleccione Nivel de Estudios"),
+    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
 export default function Registro(){
@@ -64,7 +65,7 @@ export default function Registro(){
                 <p>{errors.email?.message}</p>
 
                 <input placeholder="FECHA_NACIMIENTO (YYYY-MM-DD)" {...register("fechaNacimiento")}></input>
-                <p>{errors.fecha?.message}</p>
+                <p>{errors.fechaNacimiento?.message}</p>
 
                 <input placeholder="Dirección" {...register("direccion")} />
                 <p>{errors.direccion?.message}</p>
@@ -76,7 +77,9 @@ export default function Registro(){
                     <option value="universidad">Universidad</option>
                 </select>
                 <p>{errors.escolaridad?.message}</p>
-                
+                <input type="password" placeholder="Contraseña" {...register("password")}/>
+                <p>{errors.password?.message}</p>
+
                 <button type="submit">Guardar Datos</button>
             </form>
         </div>

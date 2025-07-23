@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Usuario" ADD COLUMN     "direccion" TEXT,
+ADD COLUMN     "lat" DOUBLE PRECISION,
+ADD COLUMN     "lng" DOUBLE PRECISION;

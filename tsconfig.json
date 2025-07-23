@@ -8,13 +8,14 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",  // Cambiado a node
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "baseUrl": ".",  // Asegúrate de tener un baseUrl adecuado
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"]  // Alias correcto
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

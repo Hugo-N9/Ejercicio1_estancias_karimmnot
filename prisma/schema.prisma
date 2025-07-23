@@ -18,8 +18,9 @@ id Int  @id @default(autoincrement())
 curp String @unique
 nombre String
 apellidos String
-email String
+email String @unique
 fechaNacimiento DateTime
-direccion String
 escolaridad  String
+direccion       String?
+password    String
 }
