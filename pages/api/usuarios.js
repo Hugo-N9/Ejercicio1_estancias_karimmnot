@@ -43,7 +43,7 @@ export default async function handler(req, res) {
      // }
 
      // const direccionNormalizada = geoData.results[0].formatted_address;
-
+      console.log("URL de la imagen recibida:", foto);
       const existe = await prisma.usuario.findUnique({ where: { curp } });
       if (existe) {
         return res.status(409).json({ error: "La CURP ingresada ya fue registrada" });
