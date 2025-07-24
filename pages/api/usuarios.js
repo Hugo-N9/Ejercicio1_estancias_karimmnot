@@ -5,8 +5,20 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
+
+    if (req.method === "GET") {
+    try {
+      const usuarios = await prisma.usuario.findMany();
+      return res.status(200).json(usuarios);
+    } catch (error) {
+      console.error("Error al obtener usuarios:", error);
+      return res.status(500).json({ error: "No se pudieron obtener los usuarios" });
+    }
+  }
+
+
   if (req.method === "POST") {
-    const { curp, nombre, apellidos, email, fechaNacimiento, direccion, escolaridad, password} = req.body;
+    const { curp, nombre, apellidos, email, fechaNacimiento, direccion, escolaridad, password, foto} = req.body;
 
     if (!curp || curp.length !== 18) {
       return res.status(409).json({ error: "La CURP es inválida" });
@@ -46,6 +58,7 @@ export default async function handler(req, res) {
           fechaNacimiento: new Date(fechaNacimiento),
           direccion,
           escolaridad,
+          foto,
           password: hashedPassword, 
         },
       });
@@ -56,7 +69,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Error del servidor" });
     }
   } else {
-    res.setHeader("Allow", ["POST"]);
+    res.setHeader("Allow", ["POST","GET"]);
     res.status(405).end(`Método ${req.method} no permitido`);
   }
 }
