@@ -50,6 +50,7 @@ export default async function handler(req, res) {
         Key: filename,
         Body: fileContent,
         ContentType: file.mimetype,
+         ACL: "public-read",
       };
       const command = new PutObjectCommand(uploadParams);
       await s3.send(command);

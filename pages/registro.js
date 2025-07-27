@@ -61,6 +61,7 @@ export default function Registro() {
         if (uploadRes.ok) {
           fotoSubidaUrl = uploadData.url;
           setFotoUrl(uploadData.url);
+          data.foto = fotoSubidaUrl; 
         } else {
           alert("Error al subir imagen");
           return;
