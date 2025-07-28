@@ -4,33 +4,44 @@ export default function EditarUsuario() {
   const [curp, setCurp] = useState("");
   const [usuario, setUsuario] = useState(null);
   const [mensaje, setMensaje] = useState("");
+  const [editando, setEditando] = useState(false);
 
-
-  const handleUserUpdate = async (method) => {
-    const url = `/api/usuarios/${curp}`;
-    const requestOptions = {
-      method: method, 
-      headers: { "Content-Type": "application/json" },
-      body: method === "PUT" ? JSON.stringify(usuario) : null, 
-    };
-
+  const handleBuscarUsuario = async () => {
     try {
-      const res = await fetch(url, requestOptions);
+      const res = await fetch(`/api/usuarios/${curp}`);
+      const data = await res.json();
+      if (res.ok) {
+        setUsuario(data);
+        setMensaje("");
+        setEditando(true);
+      } else {
+        setUsuario(null);
+        setEditando(false);
+        setMensaje(data.error || "Usuario no encontrado");
+      }
+    } catch (error) {
+      setMensaje("Error al buscar el usuario");
+    }
+  };
+
+  const handleActualizarUsuario = async () => {
+    try {
+      const res = await fetch(`/api/usuarios/${curp}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(usuario),
+      });
+
       const data = await res.json();
 
       if (res.ok) {
-        if (method === "GET") {
-          setUsuario(data); 
-        } else {
-          setMensaje("Usuario actualizado correctamente");
-        }
+        setMensaje("Usuario actualizado correctamente");
+        setUsuario(data);
       } else {
-        setMensaje(data.error || "Error al actualizar usuario");
-        setUsuario(null);
+        setMensaje(data.error || "No se pudo actualizar el usuario");
       }
     } catch (error) {
-      setMensaje(`Error al ${method === "GET" ? "buscar" : "actualizar"} el usuario`);
-      setUsuario(null);
+      setMensaje(" Error al actualizar usuario");
     }
   };
 
@@ -38,61 +49,55 @@ export default function EditarUsuario() {
     <div style={{ padding: 20 }}>
       <h1>Editar Usuario</h1>
 
-      
       <input
-        placeholder="CURP del usuario"
+        placeholder="Escribe CURP"
         value={curp}
         onChange={(e) => setCurp(e.target.value)}
         maxLength={18}
       />
-      <button onClick={() => handleUserUpdate("GET")}>Buscar</button>
+      <button onClick={handleBuscarUsuario}>Buscar</button>
 
-      {usuario && (
+      {usuario && editando && (
         <div style={{ marginTop: 20 }}>
-          <h3>Editar datos del Usuario</h3>
-          <p>
-            <strong>Nombre:</strong>
-            <input
-              value={usuario.nombre}
-              onChange={(e) => setUsuario({ ...usuario, nombre: e.target.value })}
-            />
-          </p>
-          <p>
-            <strong>Apellidos:</strong>
-            <input
-              value={usuario.apellidos}
-              onChange={(e) => setUsuario({ ...usuario, apellidos: e.target.value })}
-            />
-          </p>
-          <p>
-            <strong>Email:</strong>
-            <input
-              value={usuario.email}
-              onChange={(e) => setUsuario({ ...usuario, email: e.target.value })}
-            />
-          </p>
-          <p>
-            <strong>Dirección:</strong>
-            <input
-              value={usuario.direccion || ""}
-              onChange={(e) => setUsuario({ ...usuario, direccion: e.target.value })}
-            />
-          </p>
-          <p>
-            <strong>Escolaridad:</strong>
-            <input
-              value={usuario.escolaridad}
-              onChange={(e) => setUsuario({ ...usuario, escolaridad: e.target.value })}
-            />
-          </p>
+          <h3>Formulario de Edición</h3>
 
-          
-          <button onClick={() => handleUserUpdate("PUT")}>Actualizar Usuario</button>
+          <label>Nombre:</label>
+          <input
+            value={usuario.nombre}
+            onChange={(e) => setUsuario({ ...usuario, nombre: e.target.value })}
+          />
+
+          <label>Apellidos:</label>
+          <input
+            value={usuario.apellidos}
+            onChange={(e) => setUsuario({ ...usuario, apellidos: e.target.value })}
+          />
+
+          <label>Email:</label>
+          <input
+            value={usuario.email}
+            onChange={(e) => setUsuario({ ...usuario, email: e.target.value })}
+          />
+
+          <label>Dirección:</label>
+          <input
+            value={usuario.direccion || ""}
+            onChange={(e) => setUsuario({ ...usuario, direccion: e.target.value })}
+          />
+
+          <label>Escolaridad:</label>
+          <input
+            value={usuario.escolaridad || ""}
+            onChange={(e) => setUsuario({ ...usuario, escolaridad: e.target.value })}
+          />
+
+          <div style={{ marginTop: 10 }}>
+            <button onClick={handleActualizarUsuario}>Guardar Cambios</button>
+          </div>
         </div>
       )}
 
-      
-      <p style={{ marginTop: 20 }}>{mensaje}</p>
+      {mensaje && <p style={{ marginTop: 20 }}>{mensaje}</p>}
     </div>
   );
 }

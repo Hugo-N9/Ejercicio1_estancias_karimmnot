@@ -28,21 +28,21 @@ export default async function handler(req, res) {
 
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-     // const encodedDireccion = encodeURIComponent(direccion);
-     // const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedDireccion}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
-     // const geoResponse = await axios.get(url);
-     // const geoData = geoResponse.data;
+      const encodedDireccion = encodeURIComponent(direccion);
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedDireccion}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+      const geoResponse = await axios.get(url);
+      const geoData = geoResponse.data;
 
-     // if (
-      //  !geoData ||
-      //  geoData.status !== "OK" ||
-       // !geoData.results ||
-        //geoData.results.length === 0
-     // ) {
-      //  return res.status(400).json({ error: "La dirección ingresada no es válida" });
-     // }
+      if (
+        !geoData ||
+        geoData.status !== "OK" ||
+        !geoData.results ||
+        geoData.results.length === 0
+      ) {
+        return res.status(400).json({ error: "La dirección ingresada no es válida" });
+      }
 
-     // const direccionNormalizada = geoData.results[0].formatted_address;
+      const direccionNormalizada = geoData.results[0].formatted_address;
       console.log("URL de la imagen recibida:", foto);
       const existe = await prisma.usuario.findUnique({ where: { curp } });
       if (existe) {
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
           apellidos,
           email,
           fechaNacimiento: new Date(fechaNacimiento),
-          direccion,
+          direccion : direccionNormalizada,
           escolaridad,
           foto,
           password: hashedPassword, 
