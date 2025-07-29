@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-
+import Mapa from "../components/Mapa";
 const schema = z.object({
   curp: z.string().length(18, "La CURP debe tener 18 Caracteres"),
   nombre: z.string().min(3, "El nombre no es válido"),
@@ -27,7 +27,8 @@ export default function Registro() {
   const [usuarioEncontrado, setUsuarioEncontrado] = useState(null);
   const [todosUsuarios, setTodosUsuarios] = useState([]);
   const [editando, setEditando] = useState(false);
-
+  const [ordenAscendente, setOrdenAscendente] = useState(true);
+ const [direccionMapa, setDireccionMapa] = useState("");
   const {
     register,
     handleSubmit,
@@ -53,7 +54,6 @@ export default function Registro() {
       const data = await res.json();
       setTodosUsuarios(data);
     } catch (err) {
-      console.error("Error al obtener todos los usuarios:", err);
       alert("No se pudieron obtener los usuarios");
     }
   };
@@ -88,45 +88,28 @@ export default function Registro() {
         foto: fotoSubidaUrl,
       };
 
-      if (editando && usuarioEncontrado) {
-        // Actualizar usuario
-        const res = await fetch(`/api/usuarios/${usuarioEncontrado.curp}`, {
-          method: "PUT",
+      const res = await fetch(
+        editando ? `/api/usuarios/${usuarioEncontrado.curp}` : "/api/usuarios",
+        {
+          method: editando ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        });
-        const result = await res.json();
-        if (res.ok) {
-          alert("Usuario actualizado con éxito");
-          setEditando(false);
-          setUsuarioEncontrado(null);
-          reset();
-          setFoto(null);
-          setFotoUrl("");
-          cargarUsuarios();
-        } else {
-          alert("Error al actualizar: " + result.error);
         }
+      );
+
+      const result = await res.json();
+      if (res.ok) {
+        alert(editando ? "Usuario actualizado con éxito" : "Usuario registrado con éxito");
+        setEditando(false);
+        setUsuarioEncontrado(null);
+        reset();
+        setFoto(null);
+        setFotoUrl("");
+        cargarUsuarios();
       } else {
-        // Crear usuario nuevo
-        const res = await fetch("/api/usuarios", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const result = await res.json();
-        if (res.ok) {
-          alert("Usuario registrado con éxito");
-          reset();
-          setFoto(null);
-          setFotoUrl("");
-          cargarUsuarios();
-        } else {
-          alert("Error al registrar: " + result.error);
-        }
+        alert("Error: " + result.error);
       }
-    } catch (err) {
-      console.error("Error en el envío:", err);
+    } catch {
       alert("Ocurrió un error al enviar los datos");
     }
   };
@@ -147,15 +130,13 @@ export default function Registro() {
         alert(data.error);
         setUsuarioEncontrado(null);
       }
-    } catch (error) {
+    } catch {
       alert("Error al buscar usuario");
-      console.error(error);
     }
   };
 
   const eliminarUsuario = async (curp) => {
-    const confirmar = confirm("¿Estás seguro de eliminar este usuario?");
-    if (!confirmar) return;
+    if (!confirm("¿Estás seguro de eliminar este usuario?")) return;
 
     try {
       const res = await fetch(`/api/usuarios/${curp}`, {
@@ -169,8 +150,7 @@ export default function Registro() {
         const data = await res.json();
         alert("Error al eliminar: " + data.error);
       }
-    } catch (error) {
-      console.error("Error al eliminar usuario:", error);
+    } catch {
       alert("No se pudo eliminar el usuario");
     }
   };
@@ -178,7 +158,6 @@ export default function Registro() {
   const editarUsuario = (usuario) => {
     setUsuarioEncontrado(usuario);
     setEditando(true);
-
     reset({
       curp: usuario.curp,
       nombre: usuario.nombre,
@@ -187,34 +166,41 @@ export default function Registro() {
       fechaNacimiento: usuario.fechaNacimiento.split("T")[0],
       direccion: usuario.direccion,
       escolaridad: usuario.escolaridad,
-      password: "", // vaciar contraseña para no mostrar
+      password: "",
     });
-
     setFotoUrl(usuario.foto || "");
   };
 
+  const ordenarPorNombre = () => {
+    const ordenado = [...todosUsuarios].sort((a, b) => {
+      const nombreA = a.nombre.toLowerCase();
+      const nombreB = b.nombre.toLowerCase();
+      return ordenAscendente
+        ? nombreA.localeCompare(nombreB)
+        : nombreB.localeCompare(nombreA);
+    });
+    setTodosUsuarios(ordenado);
+    setOrdenAscendente(!ordenAscendente);
+  };
+
   return (
-    <div style={{ maxWidth: 500, margin: "auto", padding: 20 }}>
+    <div className="container">
       <h1>Registro de usuarios</h1>
       <form onSubmit={handleSubmit(onSubmit)}>
         <input placeholder="CURP" {...register("curp")} disabled={editando} />
-        <p>{errors.curp?.message}</p>
-
+        <p className="mensaje-error">{errors.curp?.message}</p>
         <input placeholder="NOMBRE" {...register("nombre")} />
-        <p>{errors.nombre?.message}</p>
-
+        <p className="mensaje-error">{errors.nombre?.message}</p>
         <input placeholder="APELLIDOS" {...register("apellidos")} />
-        <p>{errors.apellidos?.message}</p>
-
+        <p className="mensaje-error">{errors.apellidos?.message}</p>
         <input placeholder="CORREO" {...register("email")} />
-        <p>{errors.email?.message}</p>
-
-        <input placeholder="FECHA_NACIMIENTO (YYYY-MM-DD)" {...register("fechaNacimiento")} />
-        <p>{errors.fechaNacimiento?.message}</p>
-
+        <p className="mensaje-error">{errors.email?.message}</p>
+        <label>Fecha de nacimiento</label>
+        <input type="date" {...register("fechaNacimiento")} />
+        <p className="mensaje-error">{errors.fechaNacimiento?.message}</p>
         <input placeholder="Dirección" {...register("direccion")} />
-        <p>{errors.direccion?.message}</p>
-
+        <p className="mensaje-error">{errors.direccion?.message}</p>
+        <Mapa direccion={direccionMapa} />
         <select {...register("escolaridad")}>
           <option value="">Selecciona un nivel</option>
           <option value="primaria">Primaria</option>
@@ -222,15 +208,12 @@ export default function Registro() {
           <option value="preparatoria">Preparatoria</option>
           <option value="universidad">Universidad</option>
         </select>
-        <p>{errors.escolaridad?.message}</p>
-
+        <p className="mensaje-error">{errors.escolaridad?.message}</p>
         <input type="password" placeholder="Contraseña" {...register("password")} />
-        <p>{errors.password?.message}</p>
-
+        <p className="mensaje-error">{errors.password?.message}</p>
         <label>Foto de perfil (PNG o JPEG)</label>
         <input type="file" accept="image/png, image/jpeg" onChange={handleFoto} />
         {fotoUrl && <img src={fotoUrl} alt="Vista previa" width={120} />}
-
         <button type="submit">{editando ? "Actualizar Usuario" : "Guardar Datos"}</button>
       </form>
 
@@ -265,23 +248,43 @@ export default function Registro() {
       <hr style={{ margin: "30px 0" }} />
       <h2>Todos los usuarios registrados</h2>
       <button onClick={cargarUsuarios}>Ver todos</button>
+      <button onClick={ordenarPorNombre} style={{ marginLeft: 10 }}>
+        Ordenar por nombre {ordenAscendente ? "▲" : "▼"}
+      </button>
 
       {todosUsuarios.length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          {todosUsuarios.map((u) => (
-            <div key={u.id} style={{ border: "1px solid #ccc", marginBottom: 10, padding: 10 }}>
-              <p><strong>CURP:</strong> {u.curp}</p>
-              <p><strong>Nombre:</strong> {u.nombre} {u.apellidos}</p>
-              <p><strong>Email:</strong> {u.email}</p>
-              <p><strong>Fecha Nac:</strong> {new Date(u.fechaNacimiento).toLocaleDateString()}</p>
-              <p><strong>Escolaridad:</strong> {u.escolaridad}</p>
-              <p><strong>Dirección:</strong> {u.direccion}</p>
-              {u.foto && <img src={u.foto} alt="Foto" width={100} />}
-              <br />
-              <button onClick={() => eliminarUsuario(u.curp)} style={{ marginRight: 10 }}>Eliminar</button>
-              <button onClick={() => editarUsuario(u)}>Editar</button>
-            </div>
-          ))}
+        <div style={{ marginTop: 20, overflowX: "auto" }}>
+          <table className="tabla-usuarios">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>CURP</th>
+                <th>Email</th>
+                <th>Fecha Nac</th>
+                <th>Escolaridad</th>
+                <th>Dirección</th>
+                <th>Foto</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {todosUsuarios.map((u) => (
+                <tr key={u.id}>
+                  <td>{u.nombre} {u.apellidos}</td>
+                  <td>{u.curp}</td>
+                  <td>{u.email}</td>
+                  <td>{new Date(u.fechaNacimiento).toLocaleDateString()}</td>
+                  <td>{u.escolaridad}</td>
+                  <td>{u.direccion}</td>
+                  <td>{u.foto && <img src={u.foto} alt="Foto" width={60} />}</td>
+                  <td>
+                    <button onClick={() => eliminarUsuario(u.curp)}>Eliminar</button>
+                    <button onClick={() => editarUsuario(u)}>Editar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
