@@ -44,7 +44,7 @@ return (
 <Marker position={ubicacion} />
 </GoogleMap>
 ) : (
-<p>Dirección no encontrada o inválida</p>
+<p></p>
 )}
 </div>
 );

@@ -25,20 +25,27 @@ export default function Login() {
     }
   };
 
-  return (
-    <form onSubmit={handleLogin}>
-      <input
-        placeholder="Correo"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Contraseña"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button type="submit">Iniciar sesión</button>
-    </form>
-  );
+
+return (
+<div className="login-container">
+<form onSubmit={handleLogin} className="login-form">
+<h2>Iniciar sesión</h2>
+<input
+placeholder="Correo"
+value={email}
+onChange={(e) => setEmail(e.target.value)}
+type="email"
+required
+/>
+<input
+type="password"
+placeholder="Contraseña"
+value={password}
+onChange={(e) => setPassword(e.target.value)}
+required
+/>
+<button type="submit">Iniciar sesión</button>
+</form>
+</div>
+);
 }
